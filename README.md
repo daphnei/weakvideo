@@ -14,5 +14,5 @@ python setup.py build
 # Instructions for Face Detection
 
 # Files in this repo
--`data/ep{i}/CUTS.csv`: Contains the cuts computed by PySceneDetect for Episode i
--`data/ep{i}/STATS.csv`: Contains the mean color statistics for each frame in Episode i
+- `data/ep{i}/CUTS.csv`: Contains the cuts computed by PySceneDetect for Episode i
+- `data/ep{i}/STATS.csv`: Contains the mean color statistics for each frame in Episode i
