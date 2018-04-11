@@ -12,7 +12,7 @@ python setup.py build
 ```
 
 # Instructions for Face Detection
-Install OpenFace by following the (instructions)[https://cmusatyalab.github.io/openface/setup/] on their website. While OpenFace recommends using a Docker instance, I ended up installing it locally.
+Install OpenFace by following the [instructions](https://cmusatyalab.github.io/openface/setup/) on their website. While OpenFace recommends using a Docker instance, I ended up installing it locally.
 
 The script `code/extract_face_features.py` takes in a directory containing images, and extracts face vectors for each detectedface in each image. Below is an example of how to run it. Note, that OpenFace does *not* support python3.
 ```sh
