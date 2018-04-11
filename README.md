@@ -14,7 +14,7 @@ python setup.py build
 # Instructions for Face Detection
 Install OpenFace by following the [instructions](https://cmusatyalab.github.io/openface/setup/) on their website. While OpenFace recommends using a Docker instance, I ended up installing it locally.
 
-The script `code/extract_face_features.py` takes in a directory containing images, and extracts face vectors for each detectedface in each image. Below is an example of how to run it. Note, that OpenFace does *not* support python3.
+The script `code/extract_face_features.py` takes in a directory containing images, and extracts face vectors for each detectedface in each image. Below is an example of how to run it. Note that OpenFace does **not** support python3.
 ```sh
 OPEN_FACE_ROOT=...
 python2 extract_face_features.py \
@@ -23,6 +23,9 @@ python2 extract_face_features.py \
 --dlibFacePredictor="${OPEN_FACE_ROOT}/models/dlib/shape_predictor_68_face_landmarks.dat \
 /data/faces/input_dir
 ```
+In the output directory, you will find:
+- `.jpg`s of the aligned face images extracted from each image in the input directory.
+- `face_data.pkl` which contains the vector representations of each detected face
 
 # Files in this repo
 - `data/ep{i}/CUTS.csv`: Contains the cuts computed by PySceneDetect for Episode i
