@@ -18,11 +18,11 @@ args = parser.parse_args()
 
 def visualizeClusters(clustersDict):
     # The number of images to show for each cluter
-    topNumToShow = 10
+    topNumToShow = 20
     
     clustersShownCount = 0
 
-    fig, axes = plt.subplots(nrows=len(clustersDict.keys()), ncols=topNumToShow, figsize=(12, 12), sharey=True)
+    fig, axes = plt.subplots(nrows=len(clustersDict.keys()), ncols=1, figsize=(12, 12), sharey=True)
     print('nrows is ' + str(len(clustersDict.keys())))
     # fig.suptitle('Top %d faces in each cluster' % (topNumToShow))
 
@@ -34,19 +34,17 @@ def visualizeClusters(clustersDict):
                 facesInCluster,
                 key=lambda face: scipy.spatial.distance.euclidean(face.rep, center))
         print('k = ' + str(k))
-        for i in xrange(0, topNumToShow):
-            if i < len(sortedByCloseness):
-                face = sortedByCloseness[i]
-                axes[kdx, i].imshow(face.image)
+        
+        image = np.concatenate(list(face.image for face in sortedByCloseness[0:min(len(sortedByCloseness), topNumToShow)]), axis=1)
 
-            axes[kdx, i].get_yaxis().set_ticks([])
-            axes[kdx, i].get_xaxis().set_ticks([])
-
-        axes[kdx, 0].set_ylabel(str(k))
-         
-    plt.tight_layout()
+        axes[kdx].imshow(image)
+        axes[kdx].get_yaxis().set_ticks([])
+        axes[kdx].get_xaxis().set_ticks([])
+        axes[kdx].set_ylabel(str(k))
+           
     plt.tick_params(top='off', bottom='off', left='off', right='off', labelleft='on', labelbottom='on')
-    fig.savefig('clusters.png')
+    plt.tight_layout()
+    fig.savefig('clusters.png', dpi=300)
     # plt.show()
 
 
