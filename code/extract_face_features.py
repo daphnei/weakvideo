@@ -42,7 +42,7 @@ def args():
     return args
 
 def getAlignedFaces(alignDlib, imagePath, imgDim):
-    """Detects faces in the specificed image
+    """Detects faces in the specificed image.
 
     Inputs:
     alignDlib: the dlib model
@@ -131,9 +131,9 @@ if __name__ == '__main__':
             
             allFaces[imagePath] = (alignedFaces)
 
-    allFacesSerialized = {}
+    allFacesSerialized = []
     for path in allFaces.keys():
-        allFacesSerialized[path] = list(face.serialize() for face in allFaces[path])
+        allFacesSerialized.append(list(face.serialize() for face in allFaces[path]))
 
     with open(os.path.join(args.outputDir, 'face_data.pkl'), 'wb') as f:
       pickle.dump(allFacesSerialized, f)
