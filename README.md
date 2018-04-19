@@ -3,12 +3,21 @@ This repo contains code to process a once live-streamed video and annotate it wi
 
 # Instructions for Running Scene Segmentation
 To set up PySceneDetect (detailed instructions can be found in their repo README):
-```
+```sh
 pip install numpy
 pip install opencv-python
 git clone https://github.com/Breakthrough/PySceneDetect.git
 cd PySceneDetect
 python setup.py build
+```
+
+To extract scenes:
+```sh
+EPISODE=ep1
+cd PySceneDetect
+mkdir $EPISODE
+cd $EPISODE
+python ../scenedetect.py -i "/path/to/${EPISODE}.mov" -d content -t 30 -l -df 2 -si -co OUTPUT.csv -s STATS.csv
 ```
 
 # Instructions for Running Face Detection
