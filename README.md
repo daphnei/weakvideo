@@ -48,3 +48,18 @@ Nothing is done with the clustering results at the moment, except visualize them
 # Files in this repo
 - `data/ep{i}/CUTS.csv`: Contains the cuts computed by PySceneDetect for Episode i
 - `data/ep{i}/STATS.csv`: Contains the mean color statistics for each frame in Episode i
+
+# Notes
+
+## Time Offsets
+The starts of the uploaded videos align with these start times of the tweets: (following Andy's convention that the first tweets are collected at 01:00:00)
+
+- episode 1: 01:02:26
+- episode 2: 01:01:14
+- episode 3: 01:01:27
+- episode 4: 01:01:25
+- episode 5: 01:01:26
+- episode 6: 01:01:33
+- episode 7: 01:01:32
+
+- Minute 1 of ep1 starts in cut 4
