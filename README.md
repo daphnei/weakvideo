@@ -48,3 +48,8 @@ Nothing is done with the clustering results at the moment, except visualize them
 # Files in this repo
 - `data/ep{i}/CUTS.csv`: Contains the cuts computed by PySceneDetect for Episode i
 - `data/ep{i}/STATS.csv`: Contains the mean color statistics for each frame in Episode i
+
+# Useful Info
+
+## Time Offsets
+- Minute 1 of ep1 starts in cut 4
