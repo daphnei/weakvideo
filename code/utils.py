@@ -1,6 +1,7 @@
 import os
 import cv2
 import pickle
+import pandas
 
 class Face:
     def __init__(self, sourceImagePath=None, idx=None, bb=None, image=None, fromDict=None):
@@ -53,7 +54,48 @@ class Face:
           'rep': self.rep}
 
 def pathToName(sourceImagePath):
+    '''Converts a path into a name based on the filename stripped of its extension.'''
     return os.path.splitext(os.path.basename(sourceImagePath))[0]
+
+def readCuts(cutsPath):
+    data = pandas.read_csv(cutsPath, sep=',')
+    return dict(zip(data['Scene Number'], data['Length (seconds)']))
+
+def readCharacters(charactersPath):
+    f = open(charactersPath)
+    print(f.readline())
+
+    charactersByTime = {}
+    for row in f:
+        time, character, count = row.strip().split(',')
+        # TODO: This is hard-coded for episode 1, needs to be fixed.
+        time = int(time[-2:]) - 3
+
+        if time not in charactersByTime:
+            charactersByTime[time] = [character]
+        else:
+            charactersByTime[time].append(character)
+    return charactersByTime
+
+def processCutsIntoBuckets(cuts, lengthInSeconds):
+    timeSoFar = 0
+
+    bucketCount  = 1
+    cutsInBucket = []
+
+    buckets = []
+    
+    for cutIdx, cutLength in cuts.iteritems():
+        cutsInBucket.append(cutIdx)
+         
+        timeSoFar += cutLength
+        while timeSoFar >= bucketCount * lengthInSeconds:
+            buckets.append(cutsInBucket)
+            cutsInBucket = [cutIdx]
+            bucketCount+=1
+
+    return buckets
+
 
 def pickleToFaces(picklePath):
     '''Reads in information on the faces contained in each image in the dataset.
@@ -67,9 +109,9 @@ def pickleToFaces(picklePath):
     with open(picklePath, 'rb') as f:
         data = pickle.load(f)
 
-    faceOutput = []
-    for imageData in data:
-        faceOutput.append(list(Face(fromDict=faceDict) for faceDict in imageData))
+    faceOutput = {}
+    for name, imageData in data.items():
+        faceOutput[name] = list(Face(fromDict=faceDict) for faceDict in imageData)
     return faceOutput
 
 
