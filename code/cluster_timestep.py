@@ -16,8 +16,8 @@ parser.add_argument('--inputCuts', type=str, required=True,
                     help='Location of CUTS.csv file')
 parser.add_argument('--inputCharacters', type=str, required=True,
                     help='Location of characters.csv file')
-parser.add_argument('--outputClusters', type=str, required=True,
-                    help='Path to output pickle file containing clusters')
+parser.add_argument('--outputClusterDir', type=str, required=True,
+                    help='Path to directory in which to write clustering results.')
 
 args = parser.parse_args()
 
@@ -33,6 +33,8 @@ if __name__ == '__main__':
     
     # List of lists, each containing the characters Tweet-ed about in the ith minute. 
     characters = utils.readCharacters(args.inputCharacters)
+   
+    faceDim = faces.values()[0][0].image.shape[0]
     
     bucketClusters = []
     for i in xrange(len(bucketCuts)):
@@ -40,7 +42,7 @@ if __name__ == '__main__':
         if i in characters:
             numCharacters = len(characters[i])
         else:
-            bucketClusters.append([])
+            bucketClusters.append({})
             print('For minute %d, clustering FAILED because there are 0 people expected.' % (i+1))
             continue 
         
@@ -54,7 +56,7 @@ if __name__ == '__main__':
                   bucketFaceReps.extend(face.rep for face in listOfFaces)
 
         if len(bucketFaceReps) == 0:
-            bucketClusters.append([])
+            bucketClusters.append({})
             print('For minute %d, clustering FAILED because there are 0 faces (%d people expected).' % (i+1, numCharacters))
             continue 
         elif numCharacters > len(bucketFaceReps):
@@ -75,5 +77,15 @@ if __name__ == '__main__':
                 clustersDict.pop(key, None)
         bucketClusters.append(clustersDict)
 
-    with open(args.outputClusters, 'wb') as f:
+    if not os.path.exists(args.outputClusterDir):
+      os.makedirs(args.outputClusterDir)
+
+    outputFile = os.path.join(args.outputClusterDir, 'faceClusters.pkl')
+    with open(outputFile, 'wb') as f:
         pickle.dump(bucketClusters, f)
+        
+    import pdb; pdb.set_trace()
+    for idx, clusters in enumerate(bucketClusters):
+        outputFile = os.path.join(args.outputClusterDir, 't_%s.png' % (idx+1))
+        utils.visualizeClusters(clusters, faceDim, outputPath=outputFile)
+        
