@@ -23,7 +23,7 @@ python ../scenedetect.py -i "/path/to/${EPISODE}.mov" -d content -t 30 -l -df 2 
 # Instructions for Running Face Detection
 Install OpenFace by following the [instructions](https://cmusatyalab.github.io/openface/setup/) on their website. While OpenFace recommends using a Docker instance, I ended up installing it locally.
 
-The script `code/extract_face_features.py` takes in a directory containing images, and extracts face vectors for each detectedface in each image. Below is an example of how to run it. Note that OpenFace does **not** support python3.
+The script `code/extract_face_features.py` takes in a directory containing images, and extracts face vectors for each detected face in each image. Below is an example of how to run it. Note that OpenFace does **not** support python3.
 ```sh
 OPEN_FACE_ROOT=...
 python2 extract_face_features.py \
@@ -40,22 +40,22 @@ In the output directory, you will find:
 To do clustering, you must run `extract_face_features.py` first to extract faces. 
 
 ## Clustering all the faces for an episode
-You can run `cluster.py` in the following manner:
+You can run `cluster_all.py` in the following manner:
 ```sh
-python cluster.py --inputFile=/path/to/face_data.pkl --numClusters=20
+python cluster_all.py --inputFile=/path/to/face_data.pkl --numClusters=20
 ```
 
 Nothing is done with the clustering results at the moment, except visualize them. You should get something like this:
 ![Face cluster results](images/clusters.png)
 
 ## Clustering the faces in each minute interval
-You can run `cluster.py` in the following manner:
+You can run `cluster_timestep.py` in the following manner:
 ```sh
 python cluster_timestep.py \
   --inputCuts=../data/ep1/CUTS.csv \
   --inputCharacters=../data/ep1/characterNames.csv \
   --inputFaces=../data/ep1/faces/face_data.pkl \
-  --outputClusters=../data/ep1/faces/face_clusters.pkl
+  --outputClusterDir=../data/ep1/faces_clusters
 ```
 
 # Files in this repo
