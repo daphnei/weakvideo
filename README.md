@@ -37,13 +37,26 @@ In the output directory, you will find:
 - `face_data.pkl` which contains the vector representations of each detected face. You can download an example of this [here](seas.upenn.edu/~daphnei/data/face_data.pkl).
 
 # Clustering Faces
-You must run `extract_face_features.py` first. Then you can run `cluster.py` in the following manner:
+To do clustering, you must run `extract_face_features.py` first to extract faces. 
+
+## Clustering all the faces for an episode
+You can run `cluster.py` in the following manner:
 ```sh
 python cluster.py --inputFile=/path/to/face_data.pkl --numClusters=20
 ```
 
 Nothing is done with the clustering results at the moment, except visualize them. You should get something like this:
 ![Face cluster results](images/clusters.png)
+
+## Clustering the faces in each minute interval
+You can run `cluster.py` in the following manner:
+```sh
+python cluster_timestep.py \
+  --inputCuts=../data/ep1/CUTS.csv \
+  --inputCharacters=../data/ep1/characterNames.csv \
+  --inputFaces=../data/ep1/faces/face_data.pkl \
+  --outputClusters=../data/ep1/faces/face_clusters.pkl
+```
 
 # Files in this repo
 - `data/ep{i}/CUTS.csv`: Contains the cuts computed by PySceneDetect for Episode i
