@@ -78,10 +78,16 @@ def pathToName(sourceImagePath):
     return os.path.splitext(os.path.basename(sourceImagePath))[0]
 
 def readCuts(cutsPath):
+    '''Reads a cuts csv file into a ditionary mapping cut index to the duration of that cut in seconds.
+    '''
     data = pandas.read_csv(cutsPath, sep=',')
     return dict(zip(data['Scene Number'], data['Length (seconds)']))
 
 def readCharacters(charactersPath):
+    '''Reads a chararcter csv file into a list of lists, each containing
+       the characters Tweeted about in the ith minute. 
+    '''
+
     f = open(charactersPath)
     print(f.readline())
 
@@ -95,9 +101,27 @@ def readCharacters(charactersPath):
             charactersByTime[time] = [character]
         else:
             charactersByTime[time].append(character)
-    return charactersByTime
 
-def processCutsIntoBuckets(cuts, lengthInSeconds):
+    charactersByTimeList = []
+    for timeIdx in range(max(charactersByTime.keys())):
+        if timeIdx in charactersByTime:
+            charactersByTimeList.append(charactersByTime[timeIdx])
+        else:
+            charactersByTimeList.append([])
+    return charactersByTimeList
+
+def processCutsIntoBuckets(cuts, lengthInMinutes):
+    '''Buckets the cuts into groups of those falling into each time interval.
+
+    Inputs:
+    cuts: a dictionary for cut index to length of the cutin seconds
+    lengthInMinutes: the time interval to use for bucketing
+
+    Returns:
+    List of lists, each containing the set of cuts corrpesonding to the ith time interval.
+    '''
+    lengthInSeconds = lengthInMinutes * 60.0
+
     timeSoFar = 0
 
     bucketCount  = 1
@@ -116,6 +140,34 @@ def processCutsIntoBuckets(cuts, lengthInSeconds):
 
     return buckets
 
+def processCharactersIntoBuckets(characters, lengthInMinutes):
+    '''Buckets the characters into groups of thos mentioned in each time interval.
+
+    Inputs:
+    characters: list of lists of characters, where list i contains the characters mentioned in the ith minute.
+    lengthInMinutes: the time interval to use for bucketing
+
+    Returns:
+    List of lists, each containing the set of characters mentioned in the ith time interval.
+    '''
+    assert int(lengthInMinutes) == lengthInMinutes, 'Only support integer time inervals (in minutes) for now.'
+
+    allBuckets = []
+
+    charsInBucket = None
+
+    for minuteIdx in xrange(0, len(characters)):
+        if minuteIdx % lengthInMinutes == 0:
+            if charsInBucket is not None:
+                allBuckets.append(charsInBucket)
+            charsInBucket = set()
+
+        charList = characters[minuteIdx]
+        charsInBucket = charsInBucket.union(set(charList))
+
+    return allBuckets
+
+        
 def visualizeClusters(clustersDict, faceDim, topNumToShow=20, outputPath=None):
     '''Given a clustering of Face objcets, generates a grid of the faces from each cluster.
 
