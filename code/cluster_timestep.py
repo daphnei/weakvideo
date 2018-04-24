@@ -18,6 +18,8 @@ parser.add_argument('--inputCharacters', type=str, required=True,
                     help='Location of characters.csv file')
 parser.add_argument('--outputClusterDir', type=str, required=True,
                     help='Path to directory in which to write clustering results.')
+parser.add_argument('--timeInterval', type=float, required=True,
+                    help='Number of minutes in each time interval') 
 
 args = parser.parse_args()
 
@@ -25,27 +27,36 @@ if __name__ == '__main__':
     # Dictionary from image name to list of Face objects
     faces = utils.pickleToFaces(args.inputFaces)
 
-    # Dictionry from cut index to length in seconds 
+    # Dictionary from cut index to length in seconds 
     allCuts = utils.readCuts(args.inputCuts)
 
-    # List of lists, each containing a set of cuts 
-    bucketCuts = utils.processCutsIntoBuckets(allCuts, 60)
+    # List of lists, each containing the set of cut indexes corresponding to the ith time interval.
+    bucketCuts = utils.processCutsIntoBuckets(allCuts, args.timeInterval)
     
     # List of lists, each containing the characters Tweet-ed about in the ith minute. 
     characters = utils.readCharacters(args.inputCharacters)
+
+
+    # List of lists, each containing the characters Tweet-ed about in the ith time interval (as specified by args.timeInterval) 
+    bucketCharacters = utils.processCharactersIntoBuckets(characters, args.timeInterval)
    
+    # The dimension of the face images is used for visualizing clusters.
     faceDim = faces.values()[0][0].image.shape[0]
     
+    # I use the term bucket to refer to all the faces/cuts that fall into a time interval.
     bucketClusters = []
     for i in xrange(len(bucketCuts)):
+        minute = (i+1) * args.timeInterval
+
         cuts = bucketCuts[i]
-        if i in characters:
-            numCharacters = len(characters[i])
+        if len(characters[i]) > 0:
+            numCharacters = len(bucketCharacters[i])
         else:
             bucketClusters.append({})
-            print('For minute %d, clustering FAILED because there are 0 people expected.' % (i+1))
+            print('For minute %d, clustering FAILED because there are 0 people expected.' % (minute))
             continue 
         
+        # Get all the faces that fall into this time interval.
         bucketFaceReps = []
         bucketFaces = []
         for cutIdx in cuts:
@@ -57,13 +68,13 @@ if __name__ == '__main__':
 
         if len(bucketFaceReps) == 0:
             bucketClusters.append({})
-            print('For minute %d, clustering FAILED because there are 0 faces (%d people expected).' % (i+1, numCharacters))
+            print('For minute %d, clustering FAILED because there are 0 faces (%d people expected).' % (minute, numCharacters))
             continue 
         elif numCharacters > len(bucketFaceReps):
             # Prevent there from being more clusters than datapoints
             numCharacters = len(bucketFaceReps)
 
-        print('For minute %d, clustering %d faces into %d people.' % (i+1, len(bucketFaceReps), numCharacters))
+        print('For minute %d, clustering %d faces into %d people.' % (minute, len(bucketFaceReps), numCharacters))
         bucketFaceReps = np.array(bucketFaceReps)
         centroids, labels = scipy.cluster.vq.kmeans2(bucketFaceReps, k=numCharacters, minit='points')
     
@@ -84,8 +95,9 @@ if __name__ == '__main__':
     with open(outputFile, 'wb') as f:
         pickle.dump(bucketClusters, f)
         
-    import pdb; pdb.set_trace()
     for idx, clusters in enumerate(bucketClusters):
-        outputFile = os.path.join(args.outputClusterDir, 't_%s.png' % (idx+1))
+        minute = (idx+1) * args.timeInterval
+
+        outputFile = os.path.join(args.outputClusterDir, 't_%s.png' % (minute))
         utils.visualizeClusters(clusters, faceDim, outputPath=outputFile)
         
