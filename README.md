@@ -55,7 +55,8 @@ python cluster_timestep.py \
   --inputCuts=../data/ep1/CUTS.csv \
   --inputCharacters=../data/ep1/characterNames.csv \
   --inputFaces=../data/ep1/faces/face_data.pkl \
-  --outputClusterDir=../data/ep1/faces_clusters
+  --outputClusterDir=../data/ep1/faces_clusters \
+  --timeInterval==5
 ```
 
 # Files in this repo
