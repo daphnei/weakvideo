@@ -83,7 +83,7 @@ def readCuts(cutsPath):
     data = pandas.read_csv(cutsPath, sep=',')
     return dict(zip(data['Scene Number'], data['Length (seconds)']))
 
-def readCharacters(charactersPath):
+def readCharacters(charactersPath, episodeDuration=60):
     '''Reads a chararcter csv file into a list of lists, each containing
        the characters Tweeted about in the ith minute. 
     '''
@@ -103,7 +103,7 @@ def readCharacters(charactersPath):
             charactersByTime[time].append(character)
 
     charactersByTimeList = []
-    for timeIdx in range(max(charactersByTime.keys())):
+    for timeIdx in range(episodeDuration):
         if timeIdx in charactersByTime:
             charactersByTimeList.append(charactersByTime[timeIdx])
         else:
