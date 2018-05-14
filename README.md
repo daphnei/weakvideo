@@ -17,8 +17,10 @@ EPISODE=ep1
 cd PySceneDetect
 mkdir $EPISODE
 cd $EPISODE
-python ../scenedetect.py -i "/path/to/${EPISODE}.mov" -d content -t 30 -l -df 2 -si -co OUTPUT.csv -s STATS.csv
+python ../scenedetect.py -i "/path/to/${EPISODE}.mov" -d content -t 30 -l -df 2 -si -co CUTS.csv -s STATS.csv
+echo "$(tail -n +2 CUTS.csv)" > CUTS.csv
 ```
+The last line in the above section is important as it removes the first line from the outputted `CUTS.csv`, which contains all of the cut information in a compressed format that we are not interested in processing.
 
 # Instructions for Running Face Detection
 Install OpenFace by following the [instructions](https://cmusatyalab.github.io/openface/setup/) on their website. While OpenFace recommends using a Docker instance, I ended up installing it locally.
