@@ -36,13 +36,16 @@ if __name__ == '__main__':
     # List of lists, each containing the characters Tweet-ed about in the ith minute. 
     characters = utils.readCharacters(args.inputCharacters)
 
-
     # List of lists, each containing the characters Tweet-ed about in the ith time interval (as specified by args.timeInterval) 
     bucketCharacters = utils.processCharactersIntoBuckets(characters, args.timeInterval)
    
     # The dimension of the face images is used for visualizing clusters.
     faceDim = faces.values()[0][0].image.shape[0]
     
+    print(len(bucketCuts))
+    print(len(bucketCharacters))
+    import pdb; pdb.set_trace()
+
     # I use the term bucket to refer to all the faces/cuts that fall into a time interval.
     bucketClusters = []
     for i in xrange(len(bucketCuts)):
