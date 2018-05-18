@@ -1,9 +1,8 @@
 import os
 import cv2
 import pickle
+import re
 import pandas
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import numpy as np
 
 class Face:
@@ -22,13 +21,16 @@ class Face:
             self.bbTopLeft = fromDict['bbTopLeft']
             self.bbBottomRight = fromDict['bbBottomRight']
             self.image = fromDict['image']
-            self.rep = fromDict['rep']
+            self.rep = fromDict.get('rep', None)
+            self.characters = fromDict.get('characters', None)
         else:
             self.sourceImageName = pathToName(sourceImagePath) 
             self.idx = idx
             self.bbTopLeft = (bb.left(), bb.top())
             self.bbBottomRight = (bb.right(), bb.bottom())
             self.image = image
+            self.characters = None
+            self.rep = None
 
     def saveImage(self, outputDir):
         """Saved aligned face image as .jpg on disk.
@@ -45,6 +47,20 @@ class Face:
         """Runs a forward pass of NN to get a vector representation of the aligned face image.
         """
         self.rep = facenet.forward(self.image)
+        return self.rep
+
+    def getTime(self, sceneTimes):
+        match = re.match(r'ep.*.mov.Scene-(\d+)-(IN|OUT)', self.sourceImageName)
+        if match is None:
+            return None
+        else:
+            sceneId = int(match.groups()[0])
+            imType = match.groups()[1]
+            if imType == 'OUT':
+                # If this frame was at the end of the scene, we instead want to mark it with
+                # the timestamp of the beginning of the next scene. 
+                sceneId += 1
+            return sceneTimes[sceneId]
 
 
     def serialize(self):
@@ -54,7 +70,8 @@ class Face:
           'bbTopLeft': self.bbTopLeft,
           'bbBottomRight': self.bbBottomRight,
           'image': self.image,
-          'rep': self.rep}
+          'rep': self.rep,
+          'characters': self.characters}
 
 def pickleToFaces(picklePath):
     '''Reads in information on the faces contained in each image in the dataset.
@@ -141,7 +158,7 @@ def processCutsIntoBuckets(cuts, lengthInMinutes):
     return buckets
 
 def processCharactersIntoBuckets(characters, lengthInMinutes):
-    '''Buckets the characters into groups of thos mentioned in each time interval.
+    '''Buckets the characters into groups of those mentioned in each time interval.
 
     Inputs:
     characters: list of lists of characters, where list i contains the characters mentioned in the ith minute.
@@ -167,52 +184,4 @@ def processCharactersIntoBuckets(characters, lengthInMinutes):
 
     return allBuckets
 
-        
-def visualizeClusters(clustersDict, faceDim, topNumToShow=20, outputPath=None):
-    '''Given a clustering of Face objcets, generates a grid of the faces from each cluster.
-
-    # TODO: Implement face sorting
-    Faces are ordered in each row from closest to cluster center (left) to furthest (right).
-
-    Inputs:
-    clustersDict: Maps from cluster ID to list of Face objects
-    faceDim: The size of a face in pixels
-    topNumToShow: How many faces from each cluster to show.
-    outputPath: Where to save the figure to. If none, figure is just shown, not saved.
-    '''
-
-    clustersShownCount = 0
-
-    print('nrows is ' + str(len(clustersDict.keys())))
-
-    blackLine = np.zeros([3, faceDim * topNumToShow, 3], dtype=np.uint8)
-    outputImage = np.array(blackLine, copy=True)
-
-    for kdx, k in enumerate(sorted(clustersDict.keys())):
-        facesInCluster = clustersDict[k]
-        # center = centroids[k, :]
-        # sortedByCloseness = sorted(
-                # facesInCluster,
-                # key=lambda face: scipy.spatial.distance.euclidean(face.rep, center))
-        sortedByCloseness = facesInCluster
-
-        print('k = ' + str(k))
-        
-        numFacesToShow = min(len(sortedByCloseness), topNumToShow)
-        rowImage = np.concatenate(list(face.image for face in sortedByCloseness[:numFacesToShow]), axis=1)
-        extraBlack = np.zeros([faceDim, (topNumToShow - numFacesToShow) * faceDim, 3], dtype=np.uint8) 
-        rowImage = np.concatenate([rowImage, extraBlack], axis=1)
-        
-        outputImage = np.concatenate([outputImage, rowImage, blackLine], axis=0)
-    plt.imshow(outputImage)
-           
-    plt.tick_params(top='off', bottom='off', left='off', right='off', labelleft='off', labelbottom='off')
-    plt.tight_layout()
-
-    if outputPath is None:
-        plt.show()
-    else:
-        plt.savefig(outputPath, dpi=300)
-
-
-
+       
