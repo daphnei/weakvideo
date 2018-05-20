@@ -89,6 +89,7 @@ def modifiedKMeans(faces):
 def main(args):
     '''Clusters all of the faces from one episode and visualizes the resulting clusters.'''
     allFaces = []
+    import pdb; pdb.set_trace()
     with open(args.inputFaceFiles, 'r') as f:
         f.readline()
         for line in f:
