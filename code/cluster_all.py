@@ -13,15 +13,6 @@ import math
 import utils
 import visualization as vis
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--inputFaceFiles', type=str, required=True,
-                    help='Location of pickle file outputed ny extract_face_features.py. Pass in multiple of these, one for each episode.')
-parser.add_argument('--numClusters', type=int, default=-1,
-                    help='The k for k-means')
-parser.add_argument('--method', type=str, required=True,
-                    help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative]')
-args = parser.parse_args()
-
 random.seed(1234)
 np.random.seed(1234)
 
@@ -69,12 +60,16 @@ def modifiedKMeans(faces):
         newAssignments = {}
         for face in faces:
             faceRep = face.rep
-            meansSorted = sorted(means.items(), 
+            possibleCharacters = face.characterNames()
+
+            meansFiltered = dict((character, mean) for character, mean in means.iteritems() if character in possibleCharacters) 
+
+            meansFilteredSorted = sorted(meansFiltered.items(), 
                                  key=lambda x: np.linalg.norm(faceRep - x[1]))
 
             # First 0 indexes into the list of means, second gives us the 0th item in the 
             # tuple, which is the character name.
-            closestChar = meansSorted[0][0]
+            closestChar = meansFilteredSorted[0][0]
             
             if face.assignment != closestChar:
                 numChanges += 1
@@ -91,7 +86,7 @@ def modifiedKMeans(faces):
     num_clusters = len(assignments)
     return labels, allChars, num_clusters
 
-if __name__ == '__main__':
+def main(args):
     '''Clusters all of the faces from one episode and visualizes the resulting clusters.'''
     allFaces = []
     with open(args.inputFaceFiles, 'r') as f:
@@ -113,6 +108,10 @@ if __name__ == '__main__':
                     faceTime = face.getTime(cutsForEp)
                     charactersForFace = utils.charactersAtTimeT(faceTime, charactersForEp)
                     face.characters = charactersForFace
+
+    badFaceFn = lambda f: f.tooBlurry(args.blurrinessThreshold) or f.tooSmall(args.sizeThreshold) or f.tooDark(args.darknessThreshold)
+    allFaces = list(face for face in allFaces if not badFaceFn(face))
+    print('Filtered out bad faces. %d faces remaning.' % (len(allFaces)))
 
     allFaceReps = list(face.rep for face in allFaces)
 
@@ -180,7 +179,7 @@ if __name__ == '__main__':
             topChar, topCharCount = characterCounts.most_common()[0]
         else:
             topChar = clusterNames[k]
-        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim)
+        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk)
         print('In cluster %d, top character is "%s"' % (k, topChar))
 
 
@@ -188,3 +187,22 @@ if __name__ == '__main__':
     print('Final silhouette coefficient = %f' % (silhouette))
     # The visualization of all the clusters in one image becomes unmanageable when the number of clusters it too high.
     # vis.visualizeAllClusters(clustersDict, faceDim, topNumToShow=25, outputPath='output.png')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--inputFaceFiles', type=str, required=True,
+                        help='Location of pickle file outputed ny extract_face_features.py. Pass in multiple of these, one for each episode.')
+    parser.add_argument('--numClusters', type=int, default=-1,
+                        help='The k for k-means')
+    parser.add_argument('--method', type=str, required=True,
+                        help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative, berg200]')
+    parser.add_argument('--darknessThreshold', type=float, default=None,
+                        help='Filter out images darker than this. (None does no filtering)')
+    parser.add_argument('--sizeThreshold', type=float, default=None,
+                        help='Filter out images smaller than this. (None does no filtering)')
+    parser.add_argument('--blurrinessThreshold', type=float, default=None,
+                        help='Filter out images blurrier than this. (None does no filtering)')
+    args = parser.parse_args()
+
+    main(args)
