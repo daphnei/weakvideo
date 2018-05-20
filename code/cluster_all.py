@@ -89,7 +89,6 @@ def modifiedKMeans(faces):
 def main(args):
     '''Clusters all of the faces from one episode and visualizes the resulting clusters.'''
     allFaces = []
-    import pdb; pdb.set_trace()
     with open(args.inputFaceFiles, 'r') as f:
         f.readline()
         for line in f:
@@ -107,7 +106,8 @@ def main(args):
                 allFaces.extend(faceList)
                 for face in faceList:
                     faceTime = face.getTime(cutsForEp)
-                    charactersForFace = utils.charactersAtTimeT(faceTime, charactersForEp)
+                    charactersForFace = utils.charactersAtTimeT(
+                        faceTime, charactersForEp, 60.*args.tweetTimeWindow)
                     face.characters = charactersForFace
 
     badFaceFn = lambda f: f.tooBlurry(args.blurrinessThreshold) or f.tooSmall(args.sizeThreshold) or f.tooDark(args.darknessThreshold)
@@ -180,7 +180,7 @@ def main(args):
             topChar, topCharCount = characterCounts.most_common()[0]
         else:
             topChar = clusterNames[k]
-        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args['saveClusterImages'])
+        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args.saveClusterImages)
         print('In cluster %d, top character is "%s"' % (k, topChar))
 
 
@@ -198,8 +198,10 @@ if __name__ == '__main__':
                         help='The k for k-means')
     parser.add_argument('--method', type=str, required=True,
                         help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative, berg200]')
-    parser.add_argument('--saveClusterImages', action='store_true', default=False,
+    parser.add_argument('--saveClusterImages', default=False, type=lambda x: (str(x).lower() == 'true'),
                         help='If flag is set, cluster images are saved to disk. Otherwise they are just displayed.')
+    parser.add_argument('--tweetTimeWindow', type=int, default=3,
+                        help='A face will be labeled with all tweets within this many minutes of its timestamp.')
     parser.add_argument('--darknessThreshold', type=float, default=None,
                         help='Filter out images darker than this. (None does no filtering)')
     parser.add_argument('--sizeThreshold', type=float, default=None,
@@ -207,5 +209,5 @@ if __name__ == '__main__':
     parser.add_argument('--blurrinessThreshold', type=float, default=None,
                         help='Filter out images blurrier than this. (None does no filtering)')
     args = parser.parse_args()
-
+    import pdb; pdb.set_trace()
     main(args)
