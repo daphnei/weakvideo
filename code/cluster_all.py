@@ -179,7 +179,7 @@ def main(args):
             topChar, topCharCount = characterCounts.most_common()[0]
         else:
             topChar = clusterNames[k]
-        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk)
+        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args['saveClusterImages'])
         print('In cluster %d, top character is "%s"' % (k, topChar))
 
 
@@ -197,6 +197,8 @@ if __name__ == '__main__':
                         help='The k for k-means')
     parser.add_argument('--method', type=str, required=True,
                         help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative, berg200]')
+    parser.add_argument('--saveClusterImages', action='store_true', default=False,
+                        help='If flag is set, cluster images are saved to disk. Otherwise they are just displayed.')
     parser.add_argument('--darknessThreshold', type=float, default=None,
                         help='Filter out images darker than this. (None does no filtering)')
     parser.add_argument('--sizeThreshold', type=float, default=None,
