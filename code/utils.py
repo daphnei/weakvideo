@@ -84,7 +84,7 @@ class Face:
         width = br[0] - tl[0]
         return height < threshold or width < threshold
 
-    def tooBlurry(face, threshold):
+    def tooBlurry(self, threshold):
         if threshold is None:
             return False
 
