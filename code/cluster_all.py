@@ -11,7 +11,7 @@ import random
 import math
 
 import utils
-import cluster_utils
+import visualization as vis
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--inputFaceFiles', type=str, required=True,
@@ -25,47 +25,71 @@ args = parser.parse_args()
 random.seed(1234)
 np.random.seed(1234)
 
-def processCharactersFile(charactersFile, offset):
-    timeToChars = {}
-    with open(charactersFile, 'r') as f:
-        f.readline()
-        for line in f:
-            if line.count(',') != 2:
-                continue
-            time, name, count = line.strip().split(',')
-            count = int(count)
-            if len(time) == 0:
-                continue
-            if time in timeToChars:
-                timeToChars[time].append((name, count))
+def modifiedKMeans(faces):
+    '''Input is a list of face objects.'''
+    allChars = []
+    for face in faces:
+        allChars.extend(c[0] for c in face.characters)
+    allChars = list(set(allChars))
+    # allChars = dict(zip(allChars, [0] * len(allChars)))
+    
+    assignments = {}
+    means = {}
+
+    # Randomly assign each image to one of its extracted names
+    for face in faces:
+        charName = random.choice(face.characters)[0]
+        face.assignment = charName
+        if charName not in assignments:
+            assignments[charName] = [face]
+        else:
+            assignments[charName].append(face)
+
+    numChanges = len(faces)
+    stopPoint = 5
+
+    # Used only for log statement
+    idx = 0
+
+    while numChanges > stopPoint:
+        print('Iteration %d' % (idx))
+        print('  Convergence count is at %d, need %d for convergence.' % (numChanges, stopPoint))
+
+        for jdx, (char, facesOfChar) in enumerate(assignments.items()):
+            print('(%d) %s: %d faces' % (jdx, char, len(facesOfChar)))
+           
+        # For each distincty name (cluster), calculate the mean of vectors assigned to that name
+        for character in assignments.keys():
+            facesOfChar = assignments[character]
+            repsOfChar = list(face.rep for face in facesOfChar)
+            means[character] = np.mean(np.array(repsOfChar), axis=0)
+
+        # Reassign each image to the cloest mean of its extracted names.
+        numChanges = 0
+        newAssignments = {}
+        for face in faces:
+            faceRep = face.rep
+            meansSorted = sorted(means.items(), 
+                                 key=lambda x: np.linalg.norm(faceRep - x[1]))
+
+            # First 0 indexes into the list of means, second gives us the 0th item in the 
+            # tuple, which is the character name.
+            closestChar = meansSorted[0][0]
+            
+            if face.assignment != closestChar:
+                numChanges += 1
+                face.assignment = closestChar
+            if closestChar not in newAssignments:
+                newAssignments[closestChar] = [face]
             else:
-                timeToChars[time] = [(name, count)]
+                newAssignments[closestChar].append(face)
+        assignments = newAssignments
+        idx+=1
 
-    outputPairs = []
-    for timeAsString in timeToChars.keys():
-        if ':' not in timeAsString:
-            print(timeAsString)
-        hour, minute = timeAsString.split(':')
-
-        # Minus 1 is because we want to start at hour=0
-        timeMinutes = (float(hour)-1) * 60 + float(minute)
-        timeMinutes -= offset
-        timeSeconds = 60 * timeMinutes
-        outputPairs.append((timeSeconds, timeToChars[timeAsString])) 
-    outputPairs = sorted(outputPairs, key= lambda x: x[0])
-    return outputPairs
-
-def charactersAtTimeT(targetTime, charactersByTime):
-    for timeSeconds, characters in charactersByTime:
-        if timeSeconds >= targetTime:
-            return characters
-    raise Exception('There should be some characters Tweeted about at every possible time in the episode')
-
-def standardizeName(charactersList, targetChar):
-    for char in charactersList:
-        if editdistance.eval(targetChar, char) <= 2:
-            return (char, count)
-    return targetChar
+    labels = list(allChars.index(face.assignment) for face in faces)
+    print(allChars)
+    num_clusters = len(assignments)
+    return labels, allChars, num_clusters
 
 if __name__ == '__main__':
     '''Clusters all of the faces from one episode and visualizes the resulting clusters.'''
@@ -77,7 +101,7 @@ if __name__ == '__main__':
             offset = float(offset)
             print('Reading in faces for %s...' %(name))
 
-            charactersForEp = processCharactersFile(charactersFile, offset)
+            charactersForEp = utils.processCharactersFile(charactersFile, offset)
             facesForEp = utils.pickleToFaces(faceFile)
             cutsForEp = utils.readCuts(cutsFile)
 
@@ -87,12 +111,13 @@ if __name__ == '__main__':
                 allFaces.extend(faceList)
                 for face in faceList:
                     faceTime = face.getTime(cutsForEp)
-                    charactersForFace = charactersAtTimeT(faceTime, charactersForEp)
+                    charactersForFace = utils.charactersAtTimeT(faceTime, charactersForEp)
                     face.characters = charactersForFace
 
     allFaceReps = list(face.rep for face in allFaces)
 
     numFaces = len(allFaces)
+    clusterNames = None
  
     print('Starting clustering with method: %s...' %(args.method))
     if args.method == 'kmeans':
@@ -119,6 +144,8 @@ if __name__ == '__main__':
         #dbscan figures out its own number of clusters without relying on the arg
         numClusters = len(set(x for x in labels if x != -1))
         print('%s out of %d faces have been discarded' % (len(list(x for x in labels if x == -1)), numFaces))
+    elif args.method == 'berg2004':
+        labels, clusterNames, numClusters = modifiedKMeans(allFaces)
     else:
         raise Exception('Unsupported clustering method: %s' % (args.method))
     print('...done.')
@@ -139,22 +166,25 @@ if __name__ == '__main__':
     faceDim = allFaces[0].image.shape[0]
 
     for k in clustersDict.keys():
-        characters = {}
-        for face in clustersDict[k]:
-            for char, count in face.characters:
-                count = math.log(count)
-                char = standardizeName(characters.keys(), char)
-                if char in characters:
-                  characters[char] += count
-                else:
-                  characters[char] = count
-        characterCounts = collections.Counter(characters)
-        topChar, topCharCount = characterCounts.most_common()[0]
-        cluster_utils.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim)
+        if clusterNames is None:
+            characters = {}
+            for face in clustersDict[k]:
+                for char, count in face.characters:
+                    count = math.log(count)
+                    char = standardizeName(characters.keys(), char)
+                    if char in characters:
+                      characters[char] += count
+                    else:
+                      characters[char] = count
+            characterCounts = collections.Counter(characters)
+            topChar, topCharCount = characterCounts.most_common()[0]
+        else:
+            topChar = clusterNames[k]
+        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim)
         print('In cluster %d, top character is "%s"' % (k, topChar))
 
 
     silhouette = sklearn.metrics.silhouette_score(allFaceReps, labels)
     print('Final silhouette coefficient = %f' % (silhouette))
     # The visualization of all the clusters in one image becomes unmanageable when the number of clusters it too high.
-    # cluster_utils.visualizeAllClusters(clustersDict, faceDim, topNumToShow=25, outputPath='output.png')
+    # vis.visualizeAllClusters(clustersDict, faceDim, topNumToShow=25, outputPath='output.png')

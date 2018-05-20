@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 import utils
+import visualization as vis
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--inputFaces', type=str, required=True,
@@ -102,5 +103,5 @@ if __name__ == '__main__':
         minute = (idx+1) * args.timeInterval
 
         outputFile = os.path.join(args.outputClusterDir, 't_%s.png' % (minute))
-        utils.visualizeClusters(clusters, faceDim, outputPath=outputFile)
+        vis.visualizeClusters(clusters, faceDim, outputPath=outputFile)
         

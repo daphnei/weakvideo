@@ -184,4 +184,89 @@ def processCharactersIntoBuckets(characters, lengthInMinutes):
 
     return allBuckets
 
-       
+def processCharactersFile(charactersFile, offset):
+    ''' Reads the characters file into a data structure.
+
+    Input: 
+    charactersFile: Path to a chararacters.csv, giving the characters
+            mentioned in each minute.
+    offset: Offset in seconds between when the Tweet stream starts and
+        when the video (on which the face timestamps are based) starts.
+
+    Returns a list of tuples. The first element is a time (seconds) in
+    the video timespace. The second element is a list of tuples where
+    the first element is a character name and the second element is the
+    character frequency. The characer lists are sorted in increasing 
+    order of time. 
+    '''
+
+    timeToChars = {}
+    with open(charactersFile, 'r') as f:
+        f.readline()
+        for line in f:
+            if line.count(',') != 2:
+                continue
+            time, name, count = line.strip().split(',')
+            count = int(count)
+            if len(time) == 0:
+                continue
+            if time in timeToChars:
+                timeToChars[time].append((name, count))
+            else:
+                timeToChars[time] = [(name, count)]
+
+    outputPairs = []
+    for timeAsString in timeToChars.keys():
+        if ':' not in timeAsString:
+            print(timeAsString)
+        hour, minute = timeAsString.split(':')
+
+        # Minus 1 is because we want to start at hour=0
+        timeMinutes = (float(hour)-1) * 60 + float(minute)
+        timeMinutes -= offset
+        timeSeconds = 60 * timeMinutes
+        outputPairs.append((timeSeconds, timeToChars[timeAsString])) 
+    outputPairs = sorted(outputPairs, key= lambda x: x[0])
+    return outputPairs
+
+def charactersAtTimeT(targetTime, charactersByTime, intervalLength=180):
+    ''' Returns all of the characters who were mentioned within the
+        specified time interval following the targetTime.
+
+        For example, if targetTime is 5.0 and intervalLength is 120,
+        returns all of the characters mentioned in the two minutes 
+        folowing the 5 second mark of the video. 
+        
+        Inputs:
+        targetTime: A time in seconds (from the beginning of the video).
+        charactersByTime: List of ordered (increasig by time) tuples.
+            First element is time, second element is a tuple of character and
+            frequency of mentions.
+        intervalLength: How many seconds after the targetTime to grab characters
+                mentions from.
+
+        Returns: A list of (character name, frquency) tuples.
+    '''
+    mentionedCharacters = []
+    for timeSecondsOfMention, characters in charactersByTime:
+        if timeSecondsOfMention >= targetTime:
+            mentionedCharacters.extend(characters)
+        if timeSecondsOfMention >= targetTime + intervalLength:
+            break
+
+    output = {}
+    for char, count in mentionedCharacters:
+      if char not in output:
+        output[char] = count
+      else:
+        output[char] += count
+    return list(output.iteritems())
+
+
+def standardizeName(charactersList, targetChar):
+    for char in charactersList:
+        if editdistance.eval(targetChar, char) <= 2:
+            return (char, count)
+    return targetChar
+
+      
