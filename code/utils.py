@@ -5,6 +5,7 @@ import re
 import pandas
 import numpy as np
 
+import matplotlib as mpl
 import scipy
 import scipy.ndimage
 import skimage.color
