@@ -5,6 +5,10 @@ import re
 import pandas
 import numpy as np
 
+import scipy
+import scipy.ndimage
+import skimage.color
+
 class Face:
     def __init__(self, sourceImagePath=None, idx=None, bb=None, image=None, fromDict=None):
         """Represents one aligned face extracted from an image.
