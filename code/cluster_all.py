@@ -46,9 +46,9 @@ def modifiedKMeans(faces):
         print('Iteration %d' % (idx))
         print('  Convergence count is at %d, need %d for convergence.' % (numChanges, stopPoint))
 
-        for jdx, (char, facesOfChar) in enumerate(assignments.items()):
-            print('(%d) %s: %d faces' % (jdx, char, len(facesOfChar)))
-           
+        # for jdx, (char, facesOfChar) in enumerate(assignments.items()):
+            # print('(%d) %s: %d faces' % (jdx, char, len(facesOfChar)))
+           # 
         # For each distincty name (cluster), calculate the mean of vectors assigned to that name
         for character in assignments.keys():
             facesOfChar = assignments[character]
@@ -110,6 +110,7 @@ def main(args):
                         faceTime, charactersForEp, 60.*args.tweetTimeWindow)
                     face.characters = charactersForFace
 
+    print('Founds %d faces total' % len(allFaces))
     badFaceFn = lambda f: f.tooBlurry(args.blurrinessThreshold) or f.tooSmall(args.sizeThreshold) or f.tooDark(args.darknessThreshold)
     allFaces = list(face for face in allFaces if not badFaceFn(face))
     print('Filtered out bad faces. %d faces remaning.' % (len(allFaces)))
@@ -209,5 +210,4 @@ if __name__ == '__main__':
     parser.add_argument('--blurrinessThreshold', type=float, default=None,
                         help='Filter out images blurrier than this. (None does no filtering)')
     args = parser.parse_args()
-    import pdb; pdb.set_trace()
     main(args)
