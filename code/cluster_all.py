@@ -166,6 +166,7 @@ def main(args):
 
     faceDim = allFaces[0].image.shape[0]
 
+    output = {}
     for k in clustersDict.keys():
         if clusterNames is None:
             characters = {}
@@ -181,12 +182,15 @@ def main(args):
             topChar, topCharCount = characterCounts.most_common()[0]
         else:
             topChar = clusterNames[k]
-        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args.saveClusterImages)
+        output[topChar] = clustersDict[k]
+        # vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args.saveClusterImages)
         print('In cluster %d, top character is "%s"' % (k, topChar))
-
 
     silhouette = sklearn.metrics.silhouette_score(allFaceReps, labels)
     print('Final silhouette coefficient = %f' % (silhouette))
+
+    return output
+
     # The visualization of all the clusters in one image becomes unmanageable when the number of clusters it too high.
     # vis.visualizeAllClusters(clustersDict, faceDim, topNumToShow=25, outputPath='output.png')
 
