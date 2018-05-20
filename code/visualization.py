@@ -40,7 +40,7 @@ def visualizeImageGrid(rowsOfFaces, faceDim, numFacesPerRow, outputPath=None):
         im = Image.fromarray(outputImage)
         im.save(outputPath)
 
-def visualizeOneCluster(clusterName, faces, faceDim):
+def visualizeOneCluster(clusterName, faces, faceDim, saveToDisk):
     numFacesPerRow = 30
 
     rowsOfFaces = []
@@ -49,7 +49,12 @@ def visualizeOneCluster(clusterName, faces, faceDim):
         facesForRow = faces[faceIdx:faceIdx+numFacesPerRow]
         rowsOfFaces.append(facesForRow)
         faceIdx += numFacesPerRow
-    outputPath = os.path.join('output', clusterName + '.png')
+    if saveToDisk:
+        outputPath = os.path.join('output', clusterName + '.png')
+    else:
+        ouputPath = None
+        print('Clustering for : ' + str(clusterName))
+
     visualizeImageGrid(rowsOfFaces, faceDim, numFacesPerRow, outputPath=outputPath)
 
 def visualizeAllClusters(clustersDict, faceDim, topNumToShow=20, outputPath=None):

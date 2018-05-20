@@ -62,6 +62,38 @@ class Face:
                 sceneId += 1
             return sceneTimes[sceneId]
 
+    def characterNames(self):
+        return list(x[0] for x in self.characters)
+
+    def tooDark(self, threshold):
+        if threshold is None:
+            return False
+
+        hsvImage = mpl.colors.rgb_to_hsv(self.image)
+        meanValue = np.mean(hsvImage[:,:,2])
+        return meanValue < threshold
+
+    def tooSmall(self, threshold):
+        if threshold is None:
+            return False
+
+        br = self.bbBottomRight
+        tl = self.bbTopLeft
+            
+        height = br[1] - tl[1]
+        width = br[0] - tl[0]
+        return height < threshold or width < threshold
+
+    def tooBlurry(face, threshold):
+        if threshold is None:
+            return False
+
+        im = self.image
+        im = skimage.color.rgb2gray(im)
+        L = scipy.ndimage.filters.laplace(im)
+        std = np.std(L)
+          
+        return std < threshold
 
     def serialize(self):
         return {
@@ -269,4 +301,4 @@ def standardizeName(charactersList, targetChar):
             return (char, count)
     return targetChar
 
-      
+
