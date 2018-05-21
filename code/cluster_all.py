@@ -129,6 +129,7 @@ def main(args):
     numFaces = len(allFaces)
     clusterNames = None
 
+    import pdb; pdb.set_trace()
     print('Starting clustering with method: %s...' %(args.method))
     if args.method == 'kmeans':
         centroids, labels = scipy.cluster.vq.kmeans2(allFaceReps, k=args.numClusters)
