@@ -135,8 +135,14 @@ def pathToName(sourceImagePath):
 def readCuts(cutsPath):
     '''Reads a cuts csv file into a ditionary mapping cut index to the duration of that cut in seconds.
     '''
-    data = pandas.read_csv(cutsPath, sep=',')
-    return dict(zip(data['Scene Number'], data['Length (seconds)']))
+    output = {}
+    with open(cutsPath) as f:
+        f.readline()
+        for line in f:
+            # Scene Number,Frame Number (Start),Timecode,Start Time (seconds),Length (seconds)
+            sceneNum, frameNum, timeCode, startTimeSeconds, lengthSeconds = line.strip().split(',')
+            output[int(sceneNum)] = float(startTimeSeconds)
+    return output
 
 def readCharacters(charactersPath, episodeDuration=60):
     '''Reads a chararcter csv file into a list of lists, each containing
@@ -301,6 +307,9 @@ def charactersAtTimeT(targetTime, charactersByTime, intervalLength=180):
             mentionedCharacters.extend(characters)
         if timeSecondsOfMention >= targetTime + intervalLength:
             break
+
+    if len(mentionedCharacters) == 0:
+      mentionedCharacters = charactersByTime[-1][1]
 
     output = {}
     for char, count in mentionedCharacters:

@@ -89,7 +89,6 @@ def modifiedKMeans(faces):
 
 def readInFaces(args):
     allFaces = []
-    import pdb; pdb.set_trace()
     with open(args.inputFaceFiles, 'r') as f:
         f.readline()
         for line in f:
@@ -98,6 +97,7 @@ def readInFaces(args):
             print('Reading in faces for %s...' %(name))
 
             charactersForEp = utils.processCharactersFile(charactersFile, offset)
+
             facesForEp = utils.pickleToFaces(faceFile)
             cutsForEp = utils.readCuts(cutsFile)
 
@@ -129,7 +129,6 @@ def main(args):
     numFaces = len(allFaces)
     clusterNames = None
 
-    import pdb; pdb.set_trace()
     print('Starting clustering with method: %s...' %(args.method))
     if args.method == 'kmeans':
         centroids, labels = scipy.cluster.vq.kmeans2(allFaceReps, k=args.numClusters)
@@ -174,7 +173,6 @@ def main(args):
                     simMatrix[jdx, idx] = 0
         # simMatrix = scipy.sparse(simMatrix)
         print('This many non-zeroes after sparsifying ' + str(np.sum(simMatrix != 0)))
-        import pdb; pdb.set_trace()
 
         cluster = sklearn.cluster.SpectralClustering(n_clusters=args.numClusters, affinity='precomputed')
         sp = cluster.fit(simMatrix)
@@ -229,8 +227,8 @@ def main(args):
         else:
             topChar = clusterNames[k]
         output[topChar] = clustersDict[k]
-        # vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args.saveClusterImages)
-        # print('In cluster %d, top character is "%s"' % (k, topChar))
+        vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args.saveClusterImages)
+        print('In cluster %d, top character is "%s"' % (k, topChar))
 
     silhouette = sklearn.metrics.silhouette_score(allFaceReps, labels)
     print('Final silhouette coefficient = %f' % (silhouette))
@@ -245,20 +243,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    
+    # Input data parameters
     parser.add_argument('--inputFaceFiles', type=str, required=True,
                         help='Location of pickle file outputed ny extract_face_features.py. Pass in multiple of these, one for each episode.')
-    parser.add_argument('--numClusters', type=int, default=-1,
-                        help='The k for k-means')
-    parser.add_argument('--method', type=str, required=True,
-                        help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative, berg200]')
-    parser.add_argument('--tweetTimeWindow', type=int, default=3,
-                        help='A face will be labeled with all tweets within this many minutes of its timestamp.')
-
-    parser.add_argument('--saveClusterImages', default=False, type=lambda x: (str(x).lower() == 'true'),
-                        help='If flag is set, cluster images are saved to disk. Otherwise they are just displayed.')
-    parser.add_argument('--groundTruthPath', default='../data/groundtruth.tsv', type=str,
-                        help='Location of groundtruth labels for evaluation of clustering.')
-
     parser.add_argument('--darknessThreshold', type=float, default=None,
                         help='Filter out images darker than this. (None does no filtering)')
     parser.add_argument('--sizeThreshold', type=float, default=None,
@@ -266,6 +254,23 @@ if __name__ == '__main__':
     parser.add_argument('--blurrinessThreshold', type=float, default=None,
                         help='Filter out images blurrier than this. (None does no filtering)')
     
+    # Weak annotation parameters
+    parser.add_argument('--annotation', type=str, default='tweets',
+                        help='Options are either "tweets" to use the character frequencies directly, or else a path to an alternative annotation file.')
+    parser.add_argument('--tweetTimeWindow', type=int, default=3,
+                        help='A face will be labeled with all tweets within this many minutes of its timestamp.')
+
+    # Clustering parameters
+    parser.add_argument('--numClusters', type=int, default=-1,
+                        help='The k for k-means')
+    parser.add_argument('--method', type=str, required=True,
+                        help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative, berg200]')
+
+    parser.add_argument('--saveClusterImages', default=False, type=lambda x: (str(x).lower() == 'true'),
+                        help='If flag is set, cluster images are saved to disk. Otherwise they are just displayed.')
+    parser.add_argument('--groundTruthPath', default='../data/groundtruth.tsv', type=str,
+                        help='Location of groundtruth labels for evaluation of clustering.')
+
     parser.add_argument('--allFaces', default=None,
                         help='For use in Jupyter notebook only')
     args = parser.parse_args()
