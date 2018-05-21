@@ -12,6 +12,7 @@ import math
 
 import utils
 import visualization as vis
+import evaluate
 
 random.seed(1234)
 np.random.seed(1234)
@@ -49,7 +50,7 @@ def modifiedKMeans(faces):
         # for jdx, (char, facesOfChar) in enumerate(assignments.items()):
             # print('(%d) %s: %d faces' % (jdx, char, len(facesOfChar)))
            # 
-        # For each distincty name (cluster), calculate the mean of vectors assigned to that name
+        # For each distinct name (cluster), calculate the mean of vectors assigned to that name
         for character in assignments.keys():
             facesOfChar = assignments[character]
             repsOfChar = list(face.rep for face in facesOfChar)
@@ -119,7 +120,7 @@ def main(args):
 
     numFaces = len(allFaces)
     clusterNames = None
- 
+
     print('Starting clustering with method: %s...' %(args.method))
     if args.method == 'kmeans':
         centroids, labels = scipy.cluster.vq.kmeans2(allFaceReps, k=args.numClusters)
@@ -129,11 +130,47 @@ def main(args):
         sp = cluster.fit(allFaceReps)
         labels = sp.labels_
         numClusters = args.numClusters
+    elif args.method == 'sparseSpectral':
+        # Get the pair-wise Euclidean distance
+        simMatrix = scipy.spatial.distance.cdist(allFaceReps, allFaceReps, metric='euclidean')
+        # Take the RBF kernel in order to get similarity
+        delta = 1
+        simMatrix = np.exp( (- simMatrix ** 2) / (2. * delta ** 2))
+        print('This many non-zeroes before sparsifying ' + str(np.sum(simMatrix != 0)))
+        
+        charStats = utils.getCharacterStats()
+        # Zero out edges between faces that don't share a character. Only consider characters
+        # whose frequency is higher than the median.
+        for idx, face1 in enumerate(allFaces):
+            for jdx, face2 in enumerate(allFaces):
+                if jdx > idx:
+                    continue
 
-        # forJoao = {'affinity' : sp.affinity_matrix_,
-                   # 'faces' : list(f.serialize() for f in allFaces)}
-        # with open('affinity.pkl', 'wb') as f:
-          # pickle.dump(forJoao, f)
+                edgeShouldExist = False
+                sharedCharacters = set(face1.characterNames()).intersection(set(face2.characterNames()))
+                for char in sharedCharacters:
+                    charMedian = charStats[char][0]
+
+                    countFace1 = list(c[1] for c in face1.characters if c[0] == char)[0]
+                    countFace2 = list(c[1] for c in face2.characters if c[0] == char)[0]
+                    # Normalize the counts by the interval length
+                    countFace1 /= float(args.tweetTimeWindow)
+                    countFace2 /= float(args.tweetTimeWindow)
+                    
+                    if countFace1 >= charMedian and countFace2 >= charMedian:
+                        edgeShouldExist = True
+                        break
+                if not edgeShouldExist:
+                    simMatrix[idx, jdx] = 0
+                    simMatrix[jdx, idx] = 0
+        # simMatrix = scipy.sparse(simMatrix)
+        print('This many non-zeroes after sparsifying ' + str(np.sum(simMatrix != 0)))
+        import pdb; pdb.set_trace()
+
+        cluster = sklearn.cluster.SpectralClustering(n_clusters=args.numClusters, affinity='precomputed')
+        sp = cluster.fit(simMatrix)
+        labels = sp.labels_
+        numClusters = args.numClusters
     elif args.method == 'agglomerative':
         cluster = sklearn.cluster.AgglomerativeClustering(n_clusters=args.numClusters, linkage='ward')
         ag = cluster.fit(allFaceReps)
@@ -173,7 +210,7 @@ def main(args):
             for face in clustersDict[k]:
                 for char, count in face.characters:
                     count = math.log(count)
-                    char = standardizeName(characters.keys(), char)
+                    char = utils.standardizeName(characters.keys(), char)
                     if char in characters:
                       characters[char] += count
                     else:
@@ -189,6 +226,8 @@ def main(args):
     silhouette = sklearn.metrics.silhouette_score(allFaceReps, labels)
     print('Final silhouette coefficient = %f' % (silhouette))
 
+    evaluate.accuracy(args.groundTruthPath, output)
+
     return output
 
     # The visualization of all the clusters in one image becomes unmanageable when the number of clusters it too high.
@@ -203,10 +242,14 @@ if __name__ == '__main__':
                         help='The k for k-means')
     parser.add_argument('--method', type=str, required=True,
                         help='Method for clustering. One of [kmeans, dbscan, spectral, agglomerative, berg200]')
-    parser.add_argument('--saveClusterImages', default=False, type=lambda x: (str(x).lower() == 'true'),
-                        help='If flag is set, cluster images are saved to disk. Otherwise they are just displayed.')
     parser.add_argument('--tweetTimeWindow', type=int, default=3,
                         help='A face will be labeled with all tweets within this many minutes of its timestamp.')
+
+    parser.add_argument('--saveClusterImages', default=False, type=lambda x: (str(x).lower() == 'true'),
+                        help='If flag is set, cluster images are saved to disk. Otherwise they are just displayed.')
+    parser.add_argument('--groundTruthPath', default='../data/groundtruth.tsv', type=str,
+                        help='Location of groundtruth labels for evaluation of clustering.')
+
     parser.add_argument('--darknessThreshold', type=float, default=None,
                         help='Filter out images darker than this. (None does no filtering)')
     parser.add_argument('--sizeThreshold', type=float, default=None,

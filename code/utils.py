@@ -4,6 +4,7 @@ import pickle
 import re
 import pandas
 import numpy as np
+import editdistance
 
 import matplotlib as mpl
 import scipy
@@ -164,6 +165,16 @@ def readCharacters(charactersPath, episodeDuration=60):
             charactersByTimeList.append([])
     return charactersByTimeList
 
+def getCharacterStats():
+    output = {}
+    with open('characterStats.tsv', 'r') as f:
+        f.readline()
+        for line in f:
+            char, median, mean, min_, max_ = line.strip().split('\t')
+            output[char] = (float(median), float(mean), float(min_), float(max_))
+    return output
+
+
 def processCutsIntoBuckets(cuts, lengthInMinutes):
     '''Buckets the cuts into groups of those falling into each time interval.
 
@@ -301,9 +312,12 @@ def charactersAtTimeT(targetTime, charactersByTime, intervalLength=180):
 
 
 def standardizeName(charactersList, targetChar):
+    '''In case the character name is spelled incorrectly, find the nearest
+       name that is already in the characterList., and return that.
+    '''
     for char in charactersList:
         if editdistance.eval(targetChar, char) <= 2:
-            return (char, count)
+            return char
     return targetChar
 
 
