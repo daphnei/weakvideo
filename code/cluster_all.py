@@ -89,6 +89,7 @@ def modifiedKMeans(faces):
 
 def readInFaces(args):
     allFaces = []
+    import pdb; pdb.set_trace()
     with open(args.inputFaceFiles, 'r') as f:
         f.readline()
         for line in f:
@@ -105,9 +106,9 @@ def readInFaces(args):
             for faceList in facesForEp.values():
                 allFaces.extend(faceList)
                 for face in faceList:
-                    faceTime = face.getTime(cutsForEp)
+                    face.time = face.getTime(cutsForEp)
                     charactersForFace = utils.charactersAtTimeT(
-                        faceTime, charactersForEp, 60.*args.tweetTimeWindow)
+                        face.time, charactersForEp, 60.*args.tweetTimeWindow)
                     face.characters = charactersForFace
 
     print('Founds %d faces total' % len(allFaces))
