@@ -53,7 +53,6 @@ def visualizeOneCluster(clusterName, faces, faceDim, saveToDisk):
         outputPath = os.path.join('output', clusterName + '.png')
     else:
         outputPath = None
-        print('Clustering for : ' + str(clusterName))
 
     visualizeImageGrid(rowsOfFaces, faceDim, numFacesPerRow, outputPath=outputPath)
 

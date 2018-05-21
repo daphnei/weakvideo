@@ -87,8 +87,7 @@ def modifiedKMeans(faces):
     num_clusters = len(assignments)
     return labels, allChars, num_clusters
 
-def main(args):
-    '''Clusters all of the faces from one episode and visualizes the resulting clusters.'''
+def readInFaces(args):
     allFaces = []
     with open(args.inputFaceFiles, 'r') as f:
         f.readline()
@@ -115,6 +114,14 @@ def main(args):
     badFaceFn = lambda f: f.tooBlurry(args.blurrinessThreshold) or f.tooSmall(args.sizeThreshold) or f.tooDark(args.darknessThreshold)
     allFaces = list(face for face in allFaces if not badFaceFn(face))
     print('Filtered out bad faces. %d faces remaning.' % (len(allFaces)))
+    return allFaces
+
+def main(args):
+    '''Clusters all of the faces from one episode and visualizes the resulting clusters.'''
+    if args.allFaces is None:
+        allFaces = readInFaces(args)
+    else:
+        allFaces = args.allFaces
 
     allFaceReps = list(face.rep for face in allFaces)
 
@@ -256,5 +263,8 @@ if __name__ == '__main__':
                         help='Filter out images smaller than this. (None does no filtering)')
     parser.add_argument('--blurrinessThreshold', type=float, default=None,
                         help='Filter out images blurrier than this. (None does no filtering)')
+    
+    parser.add_argument('--allFaces', default=None,
+                        help='For use in Jupyter notebook only')
     args = parser.parse_args()
     main(args)
