@@ -44,8 +44,8 @@ def modifiedKMeans(faces):
     idx = 0
 
     while numChanges > stopPoint:
-        print('Iteration %d' % (idx))
-        print('  Convergence count is at %d, need %d for convergence.' % (numChanges, stopPoint))
+        # print('Iteration %d' % (idx))
+        # print('  Convergence count is at %d, need %d for convergence.' % (numChanges, stopPoint))
 
         # for jdx, (char, facesOfChar) in enumerate(assignments.items()):
             # print('(%d) %s: %d faces' % (jdx, char, len(facesOfChar)))
@@ -221,7 +221,7 @@ def main(args):
             topChar = clusterNames[k]
         output[topChar] = clustersDict[k]
         # vis.visualizeOneCluster('%02d_%s' % (k, topChar), clustersDict[k], faceDim, saveToDisk=args.saveClusterImages)
-        print('In cluster %d, top character is "%s"' % (k, topChar))
+        # print('In cluster %d, top character is "%s"' % (k, topChar))
 
     silhouette = sklearn.metrics.silhouette_score(allFaceReps, labels)
     print('Final silhouette coefficient = %f' % (silhouette))
