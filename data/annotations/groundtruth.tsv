@@ -571,7 +571,7 @@ ep2.mov.Scene-1080-OUT	00	Yara Greyjoy
 ep2.mov.Scene-1081-IN	00	Yara Greyjoy
 ep2.mov.Scene-1087-OUT	00	Theon Greyjoy
 ep2.mov.Scene-207-OUT	00	Cersei Lannister
-ep2.mov.Scene-727-IN	00	Unknown Person____Peytr Baelish
+ep2.mov.Scene-727-IN	00	Peytr Baelish
 ep2.mov.Scene-727-OUT	00	Ellaria Sand
 ep2.mov.Scene-728-IN	00	Yara Greyjoy
 ep2.mov.Scene-728-OUT	00	Yara Greyjoy
@@ -1606,7 +1606,7 @@ ep7.mov.Scene-406-OUT	00	the hound
 ep7.mov.Scene-410-IN	00	Euron Greyjoy
 ep7.mov.Scene-203-IN	00	Jon Snow
 ep7.mov.Scene-203-IN	01	Varys
-ep7.mov.Scene-203-IN	02	Unknown Person____Bronn
+ep7.mov.Scene-203-IN	02	Bronn
 ep7.mov.Scene-203-OUT	00	Jon Snow
 ep7.mov.Scene-203-OUT	01	Unknown Person
 ep7.mov.Scene-203-OUT	02	Unknown Person
@@ -1934,7 +1934,7 @@ ep7.mov.Scene-270-OUT	00	Jon Snow
 ep7.mov.Scene-270-OUT	01	Jaime Lannister
 ep7.mov.Scene-270-OUT	02	Cersei Lannister
 ep7.mov.Scene-270-OUT	03	Ser Davos
-ep7.mov.Scene-273-IN	00	Unknown Person____Cersei Lannister
+ep7.mov.Scene-273-IN	00	Cersei Lannister
 ep7.mov.Scene-273-IN	01	Unknown Person
 ep7.mov.Scene-273-IN	02	Jorah Mormont
 ep7.mov.Scene-189-IN	01	Unknown Person
@@ -2022,7 +2022,7 @@ ep7.mov.Scene-321-IN	00	Tyrion Lannister
 ep7.mov.Scene-321-OUT	00	Tyrion Lannister
 ep7.mov.Scene-323-OUT	00	Varys
 ep7.mov.Scene-324-IN	00	Cersei Lannister
-ep7.mov.Scene-325-IN	00	Unknown Person____Missandei
+ep7.mov.Scene-325-IN	00	Missandei
 ep7.mov.Scene-326-IN	00	Unknown - not a face
 ep7.mov.Scene-338-OUT	00	Jon Snow
 ep7.mov.Scene-339-IN	00	Cersei Lannister
@@ -2201,7 +2201,7 @@ ep7.mov.Scene-429-IN	00	Jon Snow
 ep7.mov.Scene-429-OUT	00	Jon Snow
 ep7.mov.Scene-431-IN	00	Unknown - not a face
 ep7.mov.Scene-432-IN	00	the hound
-ep7.mov.Scene-529-IN	00	Unknown Person____Jaime Lannister
+ep7.mov.Scene-529-IN	00	Jaime Lannister
 ep7.mov.Scene-529-OUT	00	Daenerys Targaryen
 ep7.mov.Scene-529-OUT	01	Unknown Person
 ep7.mov.Scene-530-IN	00	Jon Snow
@@ -2303,7 +2303,7 @@ ep7.mov.Scene-302-OUT	00	Tyrion Lannister
 ep7.mov.Scene-303-IN	00	Jaime Lannister
 ep7.mov.Scene-303-OUT	00	Jaime Lannister
 ep7.mov.Scene-304-IN	00	Tyrion Lannister
-ep7.mov.Scene-304-IN	01	Unknown Person____Varys
+ep7.mov.Scene-304-IN	01	Varys
 ep7.mov.Scene-1144-OUT	00	Bran Stark
 ep7.mov.Scene-1146-IN	00	Bran Stark
 ep7.mov.Scene-1146-OUT	00	Bran Stark
@@ -2338,10 +2338,10 @@ ep7.mov.Scene-309-IN	00	Euron Greyjoy
 ep7.mov.Scene-188-OUT	00	Bronn
 ep7.mov.Scene-911-IN	00	Unknown Person
 ep7.mov.Scene-919-IN	00	Unknown Person
-ep7.mov.Scene-923-OUT	00	Unknown Person____Bronn
+ep7.mov.Scene-923-OUT	00	Bronn
 ep7.mov.Scene-924-IN	00	Unknown Person
 ep7.mov.Scene-926-IN	00	Unknown - not a face
-ep7.mov.Scene-927-IN	00	Unknown Person____Tyrion Lannister
+ep7.mov.Scene-927-IN	00	Tyrion Lannister
 ep7.mov.Scene-156-OUT	00	Bronn
 ep7.mov.Scene-156-OUT	01	Podrick
 ep7.mov.Scene-156-OUT	02	Brienne of Tarth
@@ -2516,7 +2516,7 @@ ep7.mov.Scene-774-IN	01	Unknown Person
 ep7.mov.Scene-878-OUT	00	Unknown Person
 ep7.mov.Scene-890-IN	00	Unknown Person
 ep7.mov.Scene-890-OUT	00	Unknown Person
-ep7.mov.Scene-892-IN	00	Unknown Person____Tyrion Lannister
+ep7.mov.Scene-892-IN	00	Tyrion Lannister
 ep7.mov.Scene-148-OUT	00	Jon Snow
 ep7.mov.Scene-148-OUT	01	Jorah Mormont
 ep7.mov.Scene-149-IN	00	Missandei
